@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
 const DEFAULT_GOALS = { calories: 2000, protein: 150, carbs: 250, fat: 65, fiber: 30 };
 const MAX_CLIENT_IMAGE_BYTES = 3.6 * 1024 * 1024;
 const LOCAL_API_ORIGIN = 'http://localhost:4173';
+const PRODUCTION_API_ORIGIN = 'https://mealtrace.onrender.com';
 const SYNC_DAYS = 30;
 
 let supabaseClient = null;
@@ -95,7 +96,7 @@ async function loadAuthConfig() {
     }
   }
 
-  if (lastError?.message === 'Failed to fetch' || isGitHubPagesHost()) {
+  if (lastError?.message === 'Failed to fetch') {
     throw new Error('MealTrace needs the API server for sign-in and analysis. Run node server.js and open http://localhost:4173.');
   }
   throw lastError || new Error('Could not load Supabase configuration.');
@@ -718,7 +719,7 @@ function getAnalysisEndpoints() {
 
 function getApiEndpoints(path) {
   const sameOrigin = path;
-  if (isGitHubPagesHost()) return [sameOrigin];
+  if (isGitHubPagesHost()) return [`${PRODUCTION_API_ORIGIN}${path}`];
   if (window.location.origin === LOCAL_API_ORIGIN) return [sameOrigin];
   return [sameOrigin, `${LOCAL_API_ORIGIN}${path}`];
 }

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MealTrace - Nutrition Tracker</title>
+  <meta name="description" content="MealTrace analyzes meal photos and logs calories, macros, vitamins, and minerals." />
+  <link rel="icon" type="image/png" href="logo-mealtrace-wordmark.png" />
+  <link rel="apple-touch-icon" href="logo-mealtrace-wordmark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+    <section class="auth-panel">
+      <div class="auth-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <img src="logo-mealtrace-wordmark.png" alt="" />
+        </span>
+        <span class="brand-name sr-only">MealTrace</span>
+      </div>
+      <div class="auth-copy">
+        <p class="section-label">Private nutrition tracking</p>
+        <h1 id="authTitle">Sign in to continue</h1>
+        <p>Your meal log, goals, and nutrition history stay locked behind your account.</p>
+      </div>
+      <form class="auth-form" id="authForm">
+        <label class="form-label" for="authEmail">Email</label>
+        <input type="email" id="authEmail" class="form-input" autocomplete="email" required />
+        <label class="form-label" for="authPassword">Password</label>
+        <input type="password" id="authPassword" class="form-input" autocomplete="current-password" minlength="6" required />
+        <button class="button button-primary" id="signInBtn" type="submit">Sign in</button>
+        <button class="button button-secondary" id="signUpBtn" type="button">Create account</button>
+      </form>
+      <p class="auth-message" id="authMessage" role="status" aria-live="polite">Checking session...</p>
+    </section>
+  </main>
+
+  <div class="app-shell" id="appShell" hidden>
+    <header class="topbar" id="navbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <img src="logo-mealtrace-wordmark.png" alt="" />
+        </span>
+        <span class="brand-name sr-only">MealTrace</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="user-pill" id="userEmail"></span>
+        <button class="settings-button" id="settingsBtn" aria-label="Settings" title="Settings">
+          <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1Z"/></svg>
+          <span>Settings</span>
+        </button>
+        <button class="settings-button" id="signOutBtn" aria-label="Sign out" title="Sign out">
+          <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 3v18"/></svg>
+          <span>Sign out</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="page-heading" aria-labelledby="pageTitle">
+        <div>
+          <h1 id="pageTitle">Today</h1>
+        </div>
+        <span class="date-pill">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4.5 9h15"/><path d="M6.5 5h11A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-10A2.5 2.5 0 0 1 6.5 5Z"/></svg>
+          <span id="navDate"></span>
+        </span>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="primary-column">
+          <section class="metric-strip" aria-label="Today's nutrition summary">
+            <article class="metric-card">
+              <span class="metric-icon green" aria-hidden="true"><img src="icon_meals.png" alt="Meals" /></span>
+              <strong id="heroMealsLogged">0</strong>
+              <span>Meals</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon green" aria-hidden="true"><img src="icon_calories.png" alt="Calories" /></span>
+              <strong><span id="heroCalories">0</span> <small>kcal</small></strong>
+              <span>Calories</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon blue" aria-hidden="true"><img src="icon_protein.png" alt="Protein" /></span>
+              <strong id="heroProtein">0g</strong>
+              <span>Protein</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon coral" aria-hidden="true"><img src="icon_carbs.png" alt="Carbs" /></span>
+              <strong id="heroCarbs">0g</strong>
+              <span>Carbs</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon amber" aria-hidden="true"><img src="icon_fat.png" alt="Fat" /></span>
+              <strong id="heroFat">0g</strong>
+              <span>Fat</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon green" aria-hidden="true"><img src="icon_fiber.png" alt="Fiber" /></span>
+              <strong id="heroFiber">0g</strong>
+              <span>Fiber</span>
+            </article>
+          </section>
+
+        <section class="panel analyzer-panel" id="uploadSection" aria-labelledby="analyzeTitle">
+          <div class="step-heading">
+            <span class="step-number">1</span>
+            <h2 id="analyzeTitle">Analyze a meal</h2>
+          </div>
+
+          <div class="input-mode-toggle" role="group" aria-label="Meal input method">
+            <button class="mode-button active" id="photoModeBtn" type="button" aria-pressed="true">
+              <svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.4-1.8A2 2 0 0 1 11 3.5h2a2 2 0 0 1 1.6.7L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><path d="M12 15.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+              Photo
+            </button>
+            <button class="mode-button" id="textModeBtn" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h12"/><path d="M4 19h9"/></svg>
+              Type
+            </button>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+            <div class="drop-inner" id="dropInner">
+              <div class="drop-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.4-1.8A2 2 0 0 1 11 3.5h2a2 2 0 0 1 1.6.7L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><path d="M12 15.8a3.3 3.3 0 1 0 0-6.6 3.3 3.3 0 0 0 0 6.6Z"/></svg>
+              </div>
+              <h3>Drop a meal photo here</h3>
+              <p>MealTrace will estimate calories, macros, vitamins, and minerals.</p>
+              <div class="drop-actions">
+                <button class="button button-primary" id="browseBtn" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M12 5v10"/><path d="m8 9 4-4 4 4"/><path d="M5 19h14"/></svg>
+                  Upload photo
+                </button>
+                <button class="button button-secondary" id="cameraBtn" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.4-1.8A2 2 0 0 1 11 3.5h2a2 2 0 0 1 1.6.7L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><path d="M12 15.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+                  Use camera
+                </button>
+              </div>
+            </div>
+            <div class="preview-inner" id="previewInner" hidden>
+              <img id="previewImg" src="" alt="Meal preview" />
+              <button class="button button-ghost remove-btn" id="removeBtn" type="button">Remove photo</button>
+            </div>
+          </div>
+
+          <div class="manual-entry" id="manualEntry" hidden>
+            <label for="mealTextInput">Meal details</label>
+            <textarea id="mealTextInput" rows="4" maxlength="500" placeholder="Example: 2 rotis, dal, rice, paneer curry, and cucumber salad"></textarea>
+          </div>
+
+          <div class="review-card">
+            <div class="step-heading">
+              <span class="step-number">2</span>
+              <h2>Review &amp; log</h2>
+            </div>
+            <div class="review-body">
+              <div class="review-illustration" aria-hidden="true">
+                <img src="review_bowl.png" alt="" />
+              </div>
+              <div>
+                <h3>No meal analyzed yet</h3>
+                <p id="reviewHint">Choose a meal photo above to see an estimated nutrition breakdown.</p>
+              </div>
+            </div>
+            <div class="analyzer-actions">
+              <button class="button button-analyze" id="analyzeBtn" type="button" disabled>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                <span id="analyzeBtnText">Analyze meal</span>
+                <span class="button-spinner" id="btnSpinner" hidden></span>
+              </button>
+              <button class="button button-secondary" id="logMealBtn" type="button" disabled>
+                <svg viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                Log meal
+              </button>
+              <button class="button button-ghost" id="analyzeAnotherBtn" type="button" disabled>
+                <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset
+              </button>
+            </div>
+          </div>
+        </section>
+        </div>
+
+        <aside class="side-column" id="dashboardSection" aria-label="Nutrition details">
+          <section class="panel analysis-card" id="resultSection">
+            <div class="panel-title-row">
+              <span class="title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="m5 14 4-4 4 3 6-7"/><path d="M17 6h2v2"/></svg></span>
+              <h2>Nutrition estimate</h2>
+            </div>
+            <div class="empty-analysis" id="emptyAnalysis">
+              <div class="bowl-illustration" aria-hidden="true">
+                <img src="nutrition_bowl.png" alt="" />
+              </div>
+              <h3>Your nutrition results will appear here</h3>
+              <p>We’ll show calories, macros, and key nutrients.</p>
+            </div>
+
+            <div class="analysis-result" id="analysisResult" hidden>
+              <div class="result-heading">
+                <div>
+                  <p class="section-label">Nutrition Analysis</p>
+                  <h3 id="resultFoodName">Your meal</h3>
+                </div>
+                <div class="calorie-pill"><strong id="resultCalories">0</strong><span>kcal</span></div>
+              </div>
+              <div class="result-body">
+                <div class="macro-ring-wrap">
+                  <canvas id="macroChart" width="150" height="150"></canvas>
+                  <div class="macro-center">
+                    <span id="macroTotal">0</span>
+                    <small>kcal</small>
+                  </div>
+                </div>
+                <div class="macro-legend">
+                  <div class="legend-item"><span class="dot dot-carb"></span><span>Carbs</span><strong id="legendCarbs">0g</strong></div>
+                  <div class="legend-item"><span class="dot dot-protein"></span><span>Protein</span><strong id="legendProtein">0g</strong></div>
+                  <div class="legend-item"><span class="dot dot-fat"></span><span>Fat</span><strong id="legendFat">0g</strong></div>
+                </div>
+              </div>
+              <div class="nutrient-grid" id="nutrientGrid"></div>
+              <div class="vitamin-chips" id="vitaminChips"></div>
+            </div>
+            <div class="estimate-metrics" aria-hidden="true">
+              <div><span>Calories</span><strong>- kcal</strong></div>
+              <div><span>Protein</span><strong>- g</strong></div>
+              <div><span>Carbs</span><strong>- g</strong></div>
+              <div><span>Fat</span><strong>- g</strong></div>
+              <div><span>Fiber</span><strong>- g</strong></div>
+            </div>
+          </section>
+
+          <section class="panel progress-panel">
+            <div class="panel-title-row">
+              <span class="title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0-9-9"/><path d="M12 3v9l6-3"/><path d="M7 17l-3 3"/></svg></span>
+              <h2 id="dashboardTitle">Nutrition goals</h2>
+              <button class="button button-ghost button-small edit-goals-button" type="button" id="editGoalsShortcut">Edit goals</button>
+            </div>
+            <div class="goal-list">
+              <div class="goal-block">
+                <div class="goal-row"><span class="goal-label goal-cal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s5 5.1 5 10a5 5 0 0 1-10 0c0-4.9 5-10 5-10Z"/></svg>Calories</span><strong id="goalCalVal">0 / 2000 kcal</strong></div>
+                <div class="progress-bar-wrap"><div class="progress-bar cal" id="calBar"></div></div>
+              </div>
+              <div class="goal-block">
+                <div class="goal-row"><span class="goal-label goal-protein"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14c2.5-6.5 5.5-9 9-9 2 0 3 1.2 3 3 0 3-2.5 4-5 4h-2l-1.6 4.2A3 3 0 0 1 6.6 18H5"/></svg>Protein</span><strong id="goalProtVal">0g / 150g</strong></div>
+                <div class="progress-bar-wrap"><div class="progress-bar protein" id="protBar"></div></div>
+              </div>
+              <div class="goal-block">
+                <div class="goal-row"><span class="goal-label goal-carbs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V4"/><path d="M7 8c0 2.8 2.2 5 5 5"/><path d="M17 8c0 2.8-2.2 5-5 5"/><path d="M7 14c0 2.8 2.2 5 5 5"/><path d="M17 14c0 2.8-2.2 5-5 5"/></svg>Carbs</span><strong id="goalCarbVal">0g / 250g</strong></div>
+                <div class="progress-bar-wrap"><div class="progress-bar carbs" id="carbBar"></div></div>
+              </div>
+              <div class="goal-block">
+                <div class="goal-row"><span class="goal-label goal-fat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11Z"/></svg>Fat</span><strong id="goalFatVal">0g / 65g</strong></div>
+                <div class="progress-bar-wrap"><div class="progress-bar fat" id="fatBar"></div></div>
+              </div>
+              <div class="goal-block">
+                <div class="goal-row"><span class="goal-label goal-fiber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4.8c-4.9.2-8.6 2-11 5.2-1.6 2.1-2.4 4.7-2.3 7.7 3 .1 5.6-.7 7.7-2.3 3.2-2.4 5-6.1 5.6-10.6Z"/><path d="M5.9 17.6c2.7-4.3 5.6-7.2 9.7-9.1"/></svg>Fiber</span><strong id="goalFiberVal">0g / 30g</strong></div>
+                <div class="progress-bar-wrap"><div class="progress-bar fiber" id="fiberBar"></div></div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="panel log-panel" id="logSection" aria-labelledby="logTitle">
+        <div class="log-header">
+          <div class="panel-title-row">
+            <span class="title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3v8"/><path d="M10 3v8"/><path d="M8 11v10"/><path d="M18 3v18"/><path d="M14 3c0 4 1.3 7 4 7"/></svg></span>
+            <h2 id="logTitle">Recent meals</h2>
+          </div>
+          <button class="link-button" id="clearLogBtn" type="button">Clear log</button>
+        </div>
+        <div class="meal-table-head" aria-hidden="true">
+          <span>Meal</span>
+          <span>Time</span>
+          <span>Calories</span>
+          <span>Protein</span>
+          <span>Carbs</span>
+          <span>Fat</span>
+          <span></span>
+        </div>
+        <div id="logEmpty" class="empty-state">
+          <span class="mini-icon" aria-hidden="true">
+            <img src="empty_basket.png" alt="" />
+          </span>
+          <h3>No meals logged today</h3>
+          <p>Analyze and log your first meal to see it here.</p>
+        </div>
+        <div class="meal-log" id="mealLog"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="camera-modal" id="cameraModal">
+    <div class="camera-box">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div class="camera-controls">
+        <button class="button button-primary" id="captureBtn" type="button">Capture</button>
+        <button class="button button-ghost" id="closeCameraBtn" type="button">Cancel</button>
+      </div>
+      <canvas id="cameraCanvas" hidden></canvas>
+    </div>
+  </dialog>
+
+  <dialog class="modal panel settings-dialog" id="settingsOverlay" aria-labelledby="settingsTitle">
+    <div class="modal-header">
+      <div>
+        <p class="section-label">Preferences</p>
+        <h3 id="settingsTitle">Settings</h3>
+      </div>
+      <button class="icon-button" id="closeSettings" aria-label="Close settings">
+        <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label class="form-label">Daily goals</label>
+      <div class="goals-form">
+        <div class="goal-input-group">
+          <label for="goalCalInput">Calories (kcal)</label>
+          <input type="number" id="goalCalInput" class="form-input" value="2000" min="500" max="9999" />
+        </div>
+        <div class="goal-input-group">
+          <label for="goalProtInput">Protein (g)</label>
+          <input type="number" id="goalProtInput" class="form-input" value="150" min="10" max="999" />
+        </div>
+        <div class="goal-input-group">
+          <label for="goalCarbInput">Carbs (g)</label>
+          <input type="number" id="goalCarbInput" class="form-input" value="250" min="10" max="999" />
+        </div>
+        <div class="goal-input-group">
+          <label for="goalFatInput">Fat (g)</label>
+          <input type="number" id="goalFatInput" class="form-input" value="65" min="5" max="999" />
+        </div>
+        <div class="goal-input-group">
+          <label for="goalFiberInput">Fiber (g)</label>
+          <input type="number" id="goalFiberInput" class="form-input" value="30" min="5" max="99" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="button button-primary" id="saveSettings" type="button">Save settings</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

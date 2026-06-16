@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">MealTrace logo</title>
+  <desc id="desc">A leaf and nutrition tracking ring forming the MealTrace mark.</desc>
+  <defs>
+    <linearGradient id="plate" x1="18" x2="78" y1="18" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#32b866"/>
+      <stop offset="1" stop-color="#17643a"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="34" x2="67" y1="30" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fff8"/>
+      <stop offset="1" stop-color="#d7f1dd"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="24" fill="url(#plate)"/>
+  <path d="M72.4 31.4c-14.9.9-26.3 6.4-33.2 16.1-4.2 5.9-6.1 12.7-5.7 20 7.4.3 14.2-1.7 20-5.9 9.7-7 15.4-18.4 18.9-30.2Z" fill="url(#leaf)"/>
+  <path d="M34.9 67.1C43.3 53 52.5 43.8 65.2 37.2" fill="none" stroke="#17643a" stroke-linecap="round" stroke-width="5.2"/>
+  <path d="M24.8 39.9A29.5 29.5 0 0 1 47.7 19.2" fill="none" stroke="#bfe8c8" stroke-linecap="round" stroke-width="5.5"/>
+  <path d="M71.7 58.2A29.5 29.5 0 0 1 44.8 77.1" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="5.5" opacity=".9"/>
+  <circle cx="27.3" cy="54.5" r="4.1" fill="#ffffff" opacity=".92"/>
+  <circle cx="31.3" cy="27.6" r="3.4" fill="#ffffff" opacity=".82"/>
+</svg>

@@ -95,7 +95,7 @@ async function loadAuthConfig() {
     }
   }
 
-  if (lastError?.message === 'Failed to fetch' || (isStaticHost() && !lastError)) {
+  if (lastError?.message === 'Failed to fetch' || isGitHubPagesHost()) {
     throw new Error('MealTrace needs the API server for sign-in and analysis. Run node server.js and open http://localhost:4173.');
   }
   throw lastError || new Error('Could not load Supabase configuration.');
@@ -718,12 +718,17 @@ function getAnalysisEndpoints() {
 
 function getApiEndpoints(path) {
   const sameOrigin = path;
+  if (isGitHubPagesHost()) return [sameOrigin];
   if (window.location.origin === LOCAL_API_ORIGIN) return [sameOrigin];
   return [sameOrigin, `${LOCAL_API_ORIGIN}${path}`];
 }
 
 function isStaticHost() {
-  return window.location.protocol === 'file:' || /\.github\.io$/i.test(window.location.hostname);
+  return window.location.protocol === 'file:' || isGitHubPagesHost();
+}
+
+function isGitHubPagesHost() {
+  return /\.github\.io$/i.test(window.location.hostname);
 }
 
 function normalizeNutrition(n) {

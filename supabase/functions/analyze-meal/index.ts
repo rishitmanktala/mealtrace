@@ -2,7 +2,7 @@ import "@supabase/functions-js/edge-runtime.d.ts"
 import { withSupabase } from "@supabase/server"
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-const GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+const GROQ_MODEL = "qwen/qwen3.6-27b"
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024
 const MAX_MEAL_DESCRIPTION_CHARS = 500
 
@@ -66,6 +66,8 @@ export default {
           temperature: 0.2,
           max_completion_tokens: 1200,
           response_format: { type: "json_object" },
+          reasoning_effort: "none",
+          reasoning_format: "hidden",
         }),
       })
     } catch {
